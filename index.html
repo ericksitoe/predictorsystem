@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sistema de Autenticação - Predictor System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -58,6 +58,121 @@
         .strength-weak { background-color: #ef4444; width: 33%; }
         .strength-medium { background-color: #f59e0b; width: 66%; }
         .strength-strong { background-color: #10b981; width: 100%; }
+        
+        /* Mobile Responsive Styles */
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        .sidebar-mobile-hidden {
+            transform: translateX(-100%);
+        }
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        .mobile-overlay.show {
+            display: block;
+        }
+        
+        /* iPhone and Samsung specific optimizations */
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+            
+            .sidebar {
+                position: fixed;
+                z-index: 50;
+                height: 100vh;
+                height: 100dvh; /* Dynamic viewport height for mobile browsers */
+                left: 0;
+                top: 0;
+                width: 280px;
+                max-width: 85vw;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                width: 100%;
+                min-height: 100vh;
+                min-height: 100dvh;
+            }
+            
+            .sidebar-mobile-hidden {
+                transform: translateX(-100%);
+            }
+            
+            /* Ensure content doesn't overflow */
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            /* Fix for iPhone notch and Samsung curved edges */
+            .main-content {
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+            
+            /* Optimize text sizes for small screens */
+            .text-2xl {
+                font-size: 1.25rem;
+            }
+            
+            .text-4xl {
+                font-size: 1.875rem;
+            }
+            
+            /* Better button sizing for touch */
+            button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            /* Improve form inputs on mobile */
+            input, select, textarea {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+        
+        /* Extra small screens (iPhone SE, etc.) */
+        @media (max-width: 375px) {
+            .sidebar {
+                width: 260px;
+                max-width: 90vw;
+            }
+            
+            .text-xl {
+                font-size: 1rem;
+            }
+            
+            .p-4 {
+                padding: 0.75rem;
+            }
+            
+            .p-6 {
+                padding: 1rem;
+            }
+            
+            .p-8 {
+                padding: 1.25rem;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .sidebar {
+                position: relative;
+                transform: translateX(0) !important;
+                width: 256px;
+                height: 100vh;
+            }
+            .mobile-overlay {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -174,13 +289,16 @@
 
     <!-- Main Application -->
     <div id="mainApp" class="hidden">
+        <!-- Mobile Overlay -->
+        <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+        
         <div class="flex h-screen bg-gray-100">
             <!-- Sidebar -->
-            <div class="bg-gray-800 text-white w-64 space-y-6 py-7 px-2">
+            <div id="sidebar" class="sidebar bg-gray-800 text-white w-64 space-y-6 py-7 px-2 sidebar-mobile-hidden md:transform-none">
                 <div class="flex items-center justify-center px-4">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-building text-blue-400 text-2xl"></i>
-                        <span class="text-xl font-semibold">EmpresaGest</span>
+                        <span class="text-xl font-semibold">Predictor System</span>
                     </div>
                 </div>
                 
@@ -229,14 +347,18 @@
             </div>
 
             <!-- Main Content -->
-            <div class="flex-1 flex flex-col overflow-hidden">
+            <div class="flex-1 flex flex-col overflow-hidden main-content">
                 <!-- Top Header -->
                 <header class="bg-white shadow-sm flex items-center justify-between p-4">
-                    <div class="flex items-center">
-                        <h1 id="pageTitle" class="text-2xl font-semibold text-gray-800">AVIATOR</h1>
+                    <div class="flex items-center space-x-4">
+                        <!-- Mobile Menu Button -->
+                        <button id="mobileMenuBtn" onclick="toggleSidebar()" class="md:hidden p-2 rounded-md hover:bg-gray-100">
+                            <i class="fas fa-bars text-gray-600"></i>
+                        </button>
+                        <h1 id="pageTitle" class="text-xl md:text-2xl font-semibold text-gray-800">AVIATOR</h1>
                     </div>
                     
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2 md:space-x-4">
                         <div class="relative">
                             <button class="p-2 rounded-full hover:bg-gray-200 relative">
                                 <i class="fas fa-bell"></i>
@@ -246,7 +368,7 @@
                         
                         <div class="flex items-center space-x-2">
                             <img id="headerUserAvatar" src="" alt="User" class="w-8 h-8 rounded-full">
-                            <div class="text-sm">
+                            <div class="text-sm hidden sm:block">
                                 <div id="headerUserName" class="font-semibold"></div>
                                 <div id="headerUserRole" class="text-xs text-gray-500"></div>
                             </div>
@@ -255,44 +377,44 @@
                 </header>
                 
                 <!-- Main Content Area -->
-                <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+                <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
                     <!-- AVIATOR Content -->
                     <div id="aviator-content" class="tab-content active">
                         <!-- Casa Selection Screen -->
-                        <div id="casaSelection" class="bg-gradient-to-br from-gray-800 via-blue-900 to-indigo-900 rounded-lg shadow-2xl p-8 text-white">
-                            <div class="text-center mb-8">
-                                <h2 class="text-4xl font-bold mb-4 text-yellow-400">🎰 Escolha sua Casa de Apostas</h2>
-                                <p class="text-xl opacity-90">Selecione onde você tem conta ou crie uma nova</p>
+                        <div id="casaSelection" class="bg-gradient-to-br from-gray-800 via-blue-900 to-indigo-900 rounded-lg shadow-2xl p-4 md:p-8 text-white">
+                            <div class="text-center mb-6 md:mb-8">
+                                <h2 class="text-2xl md:text-4xl font-bold mb-4 text-yellow-400">🎰 Escolha sua Casa de Apostas</h2>
+                                <p class="text-lg md:text-xl opacity-90">Selecione onde você tem conta ou crie uma nova</p>
                             </div>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
                                 <!-- 888bets Option -->
-                                <div class="bg-white bg-opacity-10 rounded-2xl p-8 hover:bg-opacity-20 transition-all duration-300 transform hover:scale-105">
+                                <div class="bg-white bg-opacity-10 rounded-2xl p-6 md:p-8 hover:bg-opacity-20 transition-all duration-300 transform hover:scale-105">
                                     <div class="text-center mb-6">
-                                        <div class="w-24 h-24 mx-auto mb-4 bg-orange-500 rounded-full flex items-center justify-center">
-                                            <span class="text-3xl font-bold text-white">888</span>
+                                        <div class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 bg-orange-500 rounded-full flex items-center justify-center">
+                                            <span class="text-2xl md:text-3xl font-bold text-white">888</span>
                                         </div>
-                                        <h3 class="text-2xl font-bold mb-2">888bets</h3>
-                                        <p class="text-gray-300 mb-6">Casa de apostas líder em Moçambique</p>
+                                        <h3 class="text-xl md:text-2xl font-bold mb-2">888bets</h3>
+                                        <p class="text-gray-300 mb-6 text-sm md:text-base">Casa de apostas líder em Moçambique</p>
                                     </div>
                                     
                                     <div class="space-y-4">
-                                        <button onclick="selectCasa('888bets')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200">
+                                        <button onclick="selectCasa('888bets')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 md:py-3 px-4 md:px-6 rounded-xl transition-all duration-200 text-sm md:text-base">
                                             ✅ Tenho Conta - Continuar
                                         </button>
                                         
                                         <a href="https://tracking.888africa.com/visit/?bta=227&brand=888mozambique" target="_blank" 
-                                           class="block w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 text-center">
+                                           class="block w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 md:py-3 px-4 md:px-6 rounded-xl transition-all duration-200 text-center text-sm md:text-base">
                                             🔥 Criar Conta Grátis
                                         </a>
                                     </div>
                                     
                                     <div class="mt-6 text-center">
-                                        <div class="flex items-center justify-center space-x-2 text-sm text-gray-300">
+                                        <div class="flex items-center justify-center space-x-2 text-xs md:text-sm text-gray-300">
                                             <i class="fas fa-star text-yellow-400"></i>
                                             <span>Bônus de Boas-vindas</span>
                                         </div>
-                                        <div class="flex items-center justify-center space-x-2 text-sm text-gray-300 mt-1">
+                                        <div class="flex items-center justify-center space-x-2 text-xs md:text-sm text-gray-300 mt-1">
                                             <i class="fas fa-shield-alt text-green-400"></i>
                                             <span>100% Seguro e Licenciado</span>
                                         </div>
@@ -300,32 +422,32 @@
                                 </div>
                                 
                                 <!-- Megalive Game Option -->
-                                <div class="bg-white bg-opacity-10 rounded-2xl p-8 hover:bg-opacity-20 transition-all duration-300 transform hover:scale-105">
+                                <div class="bg-white bg-opacity-10 rounded-2xl p-6 md:p-8 hover:bg-opacity-20 transition-all duration-300 transform hover:scale-105">
                                     <div class="text-center mb-6">
-                                        <div class="w-24 h-24 mx-auto mb-4 bg-purple-600 rounded-full flex items-center justify-center">
-                                            <span class="text-2xl font-bold text-white">MEGA</span>
+                                        <div class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 bg-purple-600 rounded-full flex items-center justify-center">
+                                            <span class="text-lg md:text-2xl font-bold text-white">MEGA</span>
                                         </div>
-                                        <h3 class="text-2xl font-bold mb-2">Megalive Game</h3>
-                                        <p class="text-gray-300 mb-6">Experiência de jogo premium</p>
+                                        <h3 class="text-xl md:text-2xl font-bold mb-2">Megalive Game</h3>
+                                        <p class="text-gray-300 mb-6 text-sm md:text-base">Experiência de jogo premium</p>
                                     </div>
                                     
                                     <div class="space-y-4">
-                                        <button onclick="selectCasa('megalive')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200">
+                                        <button onclick="selectCasa('megalive')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 md:py-3 px-4 md:px-6 rounded-xl transition-all duration-200 text-sm md:text-base">
                                             ✅ Tenho Conta - Continuar
                                         </button>
                                         
                                         <a href="https://www.megagamelive.com/affiliates/?btag=2345693" target="_blank" 
-                                           class="block w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 text-center">
+                                           class="block w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 md:py-3 px-4 md:px-6 rounded-xl transition-all duration-200 text-center text-sm md:text-base">
                                             🎮 Criar Conta Grátis
                                         </a>
                                     </div>
                                     
                                     <div class="mt-6 text-center">
-                                        <div class="flex items-center justify-center space-x-2 text-sm text-gray-300">
+                                        <div class="flex items-center justify-center space-x-2 text-xs md:text-sm text-gray-300">
                                             <i class="fas fa-gift text-yellow-400"></i>
                                             <span>Promoções Exclusivas</span>
                                         </div>
-                                        <div class="flex items-center justify-center space-x-2 text-sm text-gray-300 mt-1">
+                                        <div class="flex items-center justify-center space-x-2 text-xs md:text-sm text-gray-300 mt-1">
                                             <i class="fas fa-mobile-alt text-blue-400"></i>
                                             <span>App Mobile Otimizado</span>
                                         </div>
@@ -341,16 +463,16 @@
                         </div>
                         
                         <!-- Aviator Predictor (Hidden initially) -->
-                        <div id="aviatorPredictor" class="bg-gradient-to-br from-gray-800 via-blue-900 to-indigo-900 rounded-lg shadow-2xl p-8 text-white hidden">
-                            <div class="flex items-center justify-between mb-8">
+                        <div id="aviatorPredictor" class="bg-gradient-to-br from-gray-800 via-blue-900 to-indigo-900 rounded-lg shadow-2xl p-4 md:p-8 text-white hidden">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 space-y-4 md:space-y-0">
                                 <div>
-                                    <h2 class="text-4xl font-bold mb-2 text-yellow-400">✈️ Aviator Predictor</h2>
-                                    <p class="text-xl opacity-90">Sistema de Predição Inteligente</p>
+                                    <h2 class="text-2xl md:text-4xl font-bold mb-2 text-yellow-400">✈️ Aviator Predictor</h2>
+                                    <p class="text-lg md:text-xl opacity-90">Sistema de Predição Inteligente</p>
                                 </div>
-                                <div class="text-right">
+                                <div class="text-center md:text-right">
                                     <div id="selectedCasaInfo" class="bg-white bg-opacity-10 rounded-lg p-3">
                                         <div class="text-sm text-gray-300">Casa Selecionada:</div>
-                                        <div id="selectedCasaName" class="font-bold text-lg"></div>
+                                        <div id="selectedCasaName" class="font-bold text-base md:text-lg"></div>
                                     </div>
                                     <button onclick="changeCasa()" class="mt-2 text-sm text-blue-300 hover:text-blue-100 underline">
                                         Trocar Casa de Apostas
@@ -358,50 +480,54 @@
                                 </div>
                             </div>
                             <!-- Predictor Area -->
-                            <div class="max-w-md mx-auto bg-black bg-opacity-40 rounded-2xl p-8 mb-8">
-                                <div class="relative w-52 h-52 mx-auto mb-6">
-                                    <svg class="w-52 h-52 transform -rotate-90">
-                                        <circle stroke="rgba(255,255,255,0.2)" fill="transparent" r="90" cx="104" cy="104" stroke-width="12"/>
-                                        <circle id="progressCircle" stroke="#B22222" fill="transparent" r="90" cx="104" cy="104" stroke-width="12" stroke-linecap="round"/>
+                            <div class="max-w-xs sm:max-w-sm mx-auto bg-black bg-opacity-40 rounded-2xl p-3 sm:p-4 md:p-8 mb-4 md:mb-8">
+                                <div class="relative w-32 h-32 sm:w-40 sm:h-40 md:w-52 md:h-52 mx-auto mb-4 md:mb-6">
+                                    <svg class="w-32 h-32 sm:w-40 sm:h-40 md:w-52 md:h-52 transform -rotate-90">
+                                        <circle stroke="rgba(255,255,255,0.2)" fill="transparent" r="56" cx="64" cy="64" stroke-width="6" class="sm:hidden"/>
+                                        <circle stroke="rgba(255,255,255,0.2)" fill="transparent" r="70" cx="80" cy="80" stroke-width="8" class="hidden sm:block md:hidden"/>
+                                        <circle stroke="rgba(255,255,255,0.2)" fill="transparent" r="90" cx="104" cy="104" stroke-width="12" class="hidden md:block"/>
+                                        <circle id="progressCircle" stroke="#B22222" fill="transparent" r="56" cx="64" cy="64" stroke-width="6" stroke-linecap="round" class="sm:hidden"/>
+                                        <circle id="progressCircleSm" stroke="#B22222" fill="transparent" r="70" cx="80" cy="80" stroke-width="8" stroke-linecap="round" class="hidden sm:block md:hidden"/>
+                                        <circle id="progressCircleMd" stroke="#B22222" fill="transparent" r="90" cx="104" cy="104" stroke-width="12" stroke-linecap="round" class="hidden md:block"/>
                                     </svg>
                                     <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                        <div id="multiplier" class="text-4xl font-bold text-white text-center">1.00x</div>
+                                        <div id="multiplier" class="text-xl sm:text-2xl md:text-4xl font-bold text-white text-center">1.00x</div>
                                     </div>
                                 </div>
                                 
-                                <div class="bg-white bg-opacity-10 rounded-lg h-3 mb-4 overflow-hidden">
+                                <div class="bg-white bg-opacity-10 rounded-lg h-2 md:h-3 mb-4 overflow-hidden">
                                     <div id="barFill" class="h-full bg-red-500 transition-all duration-100 ease-linear" style="width: 0%"></div>
                                 </div>
                                 
-                                <div id="betMessage" class="text-center text-yellow-300 font-bold text-lg mb-4">
+                                <div id="betMessage" class="text-center text-yellow-300 font-bold text-base md:text-lg mb-4">
                                     🔥 Faça já a sua aposta 🔥
                                 </div>
                                 
-                                <div id="signalBox" class="text-center py-3 px-6 rounded-xl font-bold text-lg mb-4 bg-red-700">
+                                <div id="signalBox" class="text-center py-2 md:py-3 px-4 md:px-6 rounded-xl font-bold text-base md:text-lg mb-4 bg-red-700">
                                     🔴 Sinal Vermelho
                                 </div>
                             </div>
                             
                             <!-- History and Info -->
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                                 <!-- History -->
-                                <div class="bg-white bg-opacity-10 rounded-lg p-6">
-                                    <h3 class="text-xl font-semibold mb-4">📊 Histórico de Resultados</h3>
+                                <div class="bg-white bg-opacity-10 rounded-lg p-4 md:p-6">
+                                    <h3 class="text-lg md:text-xl font-semibold mb-4">📊 Histórico de Resultados</h3>
                                     <div id="historyList" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
                                         <!-- History items will be populated here -->
                                     </div>
                                 </div>
                                 
                                 <!-- Prediction Info -->
-                                <div class="bg-white bg-opacity-10 rounded-lg p-6">
-                                    <h3 class="text-xl font-semibold mb-4">🎯 Sistema de Sinais</h3>
-                                    <div class="space-y-3 text-sm">
+                                <div class="bg-white bg-opacity-10 rounded-lg p-4 md:p-6">
+                                    <h3 class="text-lg md:text-xl font-semibold mb-4">🎯 Sistema de Sinais</h3>
+                                    <div class="space-y-3 text-xs md:text-sm">
                                         <div class="flex items-center space-x-3">
-                                            <span class="w-4 h-4 bg-green-500 rounded-full"></span>
+                                            <span class="w-3 h-3 md:w-4 md:h-4 bg-green-500 rounded-full"></span>
                                             <span>🟢 Sinal Verde: 85-100% de confiança</span>
                                         </div>
                                         <div class="flex items-center space-x-3">
-                                            <span class="w-4 h-4 bg-red-500 rounded-full"></span>
+                                            <span class="w-3 h-3 md:w-4 md:h-4 bg-red-500 rounded-full"></span>
                                             <span>🔴 Sinal Vermelho: 65-90% de confiança</span>
                                         </div>
                                         <div class="mt-4 p-3 bg-yellow-500 bg-opacity-20 rounded-lg">
@@ -724,8 +850,8 @@
             {
                 id: 1,
                 name: 'Administrador',
-                email: 'ericksitoe00@gmail.com',
-                password: 'Maputo20', // In real app, this would be hashed
+                email: 'admin@empresa.com',
+                password: 'admin123', // In real app, this would be hashed
                 role: 'admin',
                 active: true,
                 createdAt: '2023-01-01'
@@ -773,7 +899,28 @@
 
             // Setup event listeners
             setupEventListeners();
+            
+            // Handle window resize
+            window.addEventListener('resize', handleWindowResize);
         });
+        
+        function handleWindowResize() {
+            if (currentUser) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobileOverlay');
+                
+                if (window.innerWidth >= 768) {
+                    // Desktop: always show sidebar, hide overlay
+                    sidebar.classList.remove('sidebar-mobile-hidden');
+                    overlay.classList.remove('show');
+                } else {
+                    // Mobile: always hide sidebar on resize for full content visibility
+                    // User can open it manually with menu button
+                    sidebar.classList.add('sidebar-mobile-hidden');
+                    overlay.classList.remove('show');
+                }
+            }
+        }
 
         function setupEventListeners() {
             // Login form
@@ -818,6 +965,20 @@
         function showMainApp() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
+            
+            // Initialize sidebar state properly
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            if (window.innerWidth >= 768) {
+                // Desktop: always show sidebar, no overlay
+                sidebar.classList.remove('sidebar-mobile-hidden');
+                overlay.classList.remove('show');
+            } else {
+                // Mobile: always start with sidebar hidden for full content visibility
+                sidebar.classList.add('sidebar-mobile-hidden');
+                overlay.classList.remove('show');
+            }
             
             // Update user info
             updateUserInfo();
@@ -932,9 +1093,10 @@
         };
 
         // Predictor Elements
-        let multiplierEl, signalBox, barFill, historyList, betMessage, progressCircle;
-        let radius = 90;
-        let circumference = 2 * Math.PI * radius;
+        let multiplierEl, signalBox, barFill, historyList, betMessage;
+        let progressCircles = [];
+        let radiuses = [56, 70, 90];
+        let circumferences = radiuses.map(r => 2 * Math.PI * r);
 
         // Casa Selection Functions
         function selectCasa(casaName) {
@@ -990,13 +1152,22 @@
             barFill = document.getElementById("barFill");
             historyList = document.getElementById("historyList");
             betMessage = document.getElementById("betMessage");
-            progressCircle = document.getElementById("progressCircle");
+            
+            // Setup progress circles for different screen sizes
+            progressCircles = [
+                document.getElementById("progressCircle"),
+                document.getElementById("progressCircleSm"),
+                document.getElementById("progressCircleMd")
+            ];
 
-            // Setup progress circle
-            if (progressCircle) {
-                progressCircle.style.strokeDasharray = `${circumference}`;
-                progressCircle.style.strokeDashoffset = `${circumference}`;
-            }
+            // Setup all progress circles
+            progressCircles.forEach((circle, index) => {
+                if (circle) {
+                    const circumference = circumferences[index];
+                    circle.style.strokeDasharray = `${circumference}`;
+                    circle.style.strokeDashoffset = `${circumference}`;
+                }
+            });
 
             // Initialize with some history
             initializeHistory();
@@ -1012,10 +1183,13 @@
         }
 
         function setCircleProgress(percent) {
-            if (progressCircle) {
-                const offset = circumference - percent / 100 * circumference;
-                progressCircle.style.strokeDashoffset = offset;
-            }
+            progressCircles.forEach((circle, index) => {
+                if (circle) {
+                    const circumference = circumferences[index];
+                    const offset = circumference - percent / 100 * circumference;
+                    circle.style.strokeDashoffset = offset;
+                }
+            });
         }
 
         // Realistic Aviator multiplier generation based on actual game patterns
@@ -1308,40 +1482,6 @@
             });
         }
 
-        function handleNavigation(e) {
-            e.preventDefault();
-            
-            const target = e.currentTarget.getAttribute('href').substring(1);
-            
-            // Check permissions
-            if ((target === 'users' || target === 'reports') && currentUser.role !== 'admin') {
-                showNotification('Acesso negado! Apenas administradores podem acessar esta área.', 'error');
-                return;
-            }
-            
-            // Update active link
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            e.currentTarget.classList.add('active');
-            
-            // Show content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(target + '-content').classList.add('active');
-            
-            // Update page title
-            const titles = {
-                'aviator': 'AVIATOR',
-                'profile': 'Meu Perfil',
-                'users': 'Gerenciar Usuários',
-                'reports': 'Relatórios Administrativos',
-                'settings': 'Configurações'
-            };
-            document.getElementById('pageTitle').textContent = titles[target] || 'AVIATOR';
-        }
-
         function openUserModal(userId = null) {
             editingUserId = userId;
             const modal = document.getElementById('userModal');
@@ -1561,6 +1701,62 @@
         function formatDate(dateString) {
             return new Date(dateString).toLocaleDateString('pt-BR');
         }
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            if (sidebar.classList.contains('sidebar-mobile-hidden')) {
+                // Show sidebar
+                sidebar.classList.remove('sidebar-mobile-hidden');
+                overlay.classList.add('show');
+            } else {
+                // Hide sidebar
+                sidebar.classList.add('sidebar-mobile-hidden');
+                overlay.classList.remove('show');
+            }
+        }
+
+        // Close sidebar when clicking on navigation links (mobile)
+        function handleNavigation(e) {
+            e.preventDefault();
+            
+            const target = e.currentTarget.getAttribute('href').substring(1);
+            
+            // Check permissions
+            if ((target === 'users' || target === 'reports') && currentUser.role !== 'admin') {
+                showNotification('Acesso negado! Apenas administradores podem acessar esta área.', 'error');
+                return;
+            }
+            
+            // Update active link
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            e.currentTarget.classList.add('active');
+            
+            // Show content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(target + '-content').classList.add('active');
+            
+            // Update page title
+            const titles = {
+                'aviator': 'AVIATOR',
+                'profile': 'Meu Perfil',
+                'users': 'Gerenciar Usuários',
+                'reports': 'Relatórios Administrativos',
+                'settings': 'Configurações'
+            };
+            document.getElementById('pageTitle').textContent = titles[target] || 'AVIATOR';
+            
+            // Close sidebar on mobile after navigation
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'969e2ab545b5739e',t:'MTc1NDMxMTY4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'969ed848c7664ed2',t:'MTc1NDMxODc5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
